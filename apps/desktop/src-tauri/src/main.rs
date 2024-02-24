@@ -9,6 +9,7 @@ use tauri::api::dir;
 
 fn main() {
   tauri::Builder::default()
+    .plugin(qdrant::QdrantSupervisor::default())
     .invoke_handler(tauri::generate_handler![greet])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
