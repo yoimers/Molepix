@@ -9,6 +9,7 @@ fn main() {
 }
 
 #[tauri::command]
-fn greet(name: &str) -> String {
-  format!("Hello, {}!", name)
+fn greet(name: &str) -> Vec<u8> {
+  let img = img.into_rgb8();
+  img.to_vec()
 }
