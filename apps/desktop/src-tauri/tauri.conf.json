@@ -12,7 +12,29 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "all": true,
+      "fs": {
+        "all": true,
+        "scope": [
+          "**"
+        ]
+      },
+      "protocol": {
+        "asset": true,
+        "assetScope": [
+          "/**/*"
+        ]
+      },
+      "path": {
+        "all": true
+      },
+      "dialog": {
+        "ask": false,
+        "confirm": false,
+        "message": false,
+        "open": true,
+        "save": true
+      }
     },
     "bundle": {
       "active": true,
@@ -29,7 +51,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "yoimers.com",
+      "identifier": "pixel-pantry",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -44,11 +66,20 @@
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
-        "timestampUrl": ""
+        "timestampUrl": "",
+        "webviewInstallMode": {
+          "type": "downloadBootstrapper"
+        },
+        "wix": {
+          "language": [
+            "en-US",
+            "jp-JP"
+          ]
+        }
       }
     },
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost"
     },
     "updater": {
       "active": false
