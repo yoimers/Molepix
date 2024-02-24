@@ -1,23 +1,23 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
+/apps/desktop/node_modules
+/apps/desktop/.pnp
+/apps/desktop/.pnp.js
+/apps/desktop/.yarn/install-state.gz
 
 # testing
-/coverage
+/apps/desktop/coverage
 
 # next.js
-/.next/
-/out/
+/apps/desktop/.next/
+/apps/desktop/out/
 
 # production
-/build
+/apps/desktop/build
 
 # misc
-.DS_Store
+/apps/desktop/.DS_Store
 *.pem
 
 # debug

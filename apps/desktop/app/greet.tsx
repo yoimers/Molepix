@@ -36,9 +36,9 @@ export default function Greet() {
   if (!convertFileSrcRef.current) return <></>;
   const src = convertFileSrcRef.current("D:/101601.jpg");
   return (
-    <div className="">
-      <img src={src} width={600} height={600} alt="xx" />
-      {/* <img src={convertFileSrc("D:/101601.jpg")} alt="xx" /> */}
+    <div className="w-full h-full">
+      {/* <img src={src} width={600} height={600} alt="xx" /> */}
+      <img src={convertFileSrc("D:/101601.jpg")} alt="xx" />
       {/* <TestComp /> */}
     </div>
   );
