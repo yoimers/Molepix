@@ -12,9 +12,23 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false,
-      "dialog": {
+      "all": true,
+      "fs": {
         "all": true,
+        "scope": [
+          "**"
+        ]
+      },
+      "protocol": {
+        "asset": true,
+        "assetScope": [
+          "/**/*"
+        ]
+      },
+      "path": {
+        "all": true
+      },
+      "dialog": {
         "ask": false,
         "confirm": false,
         "message": false,
@@ -37,7 +51,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "yoimers.com",
+      "identifier": "pixel-pantry",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -65,7 +79,7 @@
       }
     },
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost"
     },
     "updater": {
       "active": false
