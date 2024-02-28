@@ -6,7 +6,7 @@ use std::{
 
 use sentry::Level;
 use tauri::{plugin::Plugin, Runtime};
-use tracing::{error, info, warn};
+use tracing::{error, warn};
 
 #[derive(Default)]
 pub(super) struct QdrantSupervisor {
@@ -41,6 +41,7 @@ where
     create_dir_all(&qd_config_dir).unwrap();
     create_dir_all(&qd_logs_dir).unwrap();
 
+    println!("{:?}", data_dir);
     write(
       qd_config_dir.join("config.yaml"),
       format!(
@@ -51,16 +52,16 @@ where
     )
     .unwrap();
 
-    // let command = relative_command_path("qdrant").expect("bad bundle");
+    let command = relative_command_path("qdrant").expect("bad bundle");
     println!("Qdrant!!!!");
     self.stdout_file = Some(stdout_file.clone());
     self.stderr_file = Some(stderr_file.clone());
-    // self.child = Some(run_command(
-    //   &command,
-    //   &qdrant_dir,
-    //   &stdout_file,
-    //   &stderr_file,
-    // ));
+    self.child = Some(run_command(
+      &command,
+      &qdrant_dir,
+      &stdout_file,
+      &stderr_file,
+    ));
     self.child = None;
 
     Ok(())
@@ -113,65 +114,78 @@ where
   }
 }
 
-// impl Drop for QdrantSupervisor {
-//   fn drop(&mut self) {
-//     if let Some(mut child) = self.child.take() {
-//       if let Err(err) = child.kill() {
-//         warn!(?err, "failed to kill qdrant");
-//       }
-//     }
-//   }
-// }
+impl Drop for QdrantSupervisor {
+  fn drop(&mut self) {
+    if let Some(mut child) = self.child.take() {
+      if let Err(err) = child.kill() {
+        warn!(?err, "failed to kill qdrant");
+      }
+    }
+  }
+}
 
-// #[cfg(unix)]
-// fn run_command(command: &Path, qdrant_dir: &Path, stdout: &Path, stderr: &Path) -> Child {
-//   use nix::sys::resource::{getrlimit, setrlimit, Resource};
+fn relative_command_path(command: impl AsRef<str>) -> Option<PathBuf> {
+  let cmd = if cfg!(windows) {
+    format!("{}.exe", command.as_ref())
+  } else {
+    command.as_ref().into()
+  };
+  std::env::current_exe()
+    .ok()?
+    .parent()
+    .map(|dir| dir.join(cmd))
+    .filter(|path| path.is_file())
+}
 
-//   let logs_file = File::create(stdout).unwrap();
-//   let stderr_logs_file = File::create(stderr).unwrap();
+#[cfg(unix)]
+fn run_command(command: &Path, qdrant_dir: &Path, stdout: &Path, stderr: &Path) -> Child {
+  use nix::sys::resource::{getrlimit, setrlimit, Resource};
 
-//   match getrlimit(Resource::RLIMIT_NOFILE) {
-//     Ok((current_soft, current_hard)) => {
-//       info!(current_soft, current_hard, "got rlimit/nofile");
-//       let new_soft = current_soft.max(current_hard.min(10000));
-//       if let Err(err) = setrlimit(Resource::RLIMIT_NOFILE, new_soft, current_hard) {
-//         error!(
-//           ?err,
-//           new_soft, current_soft, current_hard, "failed to set rlimit/nofile"
-//         );
-//       } else {
-//         info!(new_soft, current_hard, "set rlimit/nofile");
-//       }
-//     }
-//     Err(err) => {
-//       error!(?err, "failed to get rlimit/nofile");
-//     }
-//   }
+  let logs_file = File::create(stdout).unwrap();
+  let stderr_logs_file = File::create(stderr).unwrap();
 
-//   Command::new(command)
-//     .current_dir(qdrant_dir)
-//     .stdout(logs_file)
-//     .stderr(stderr_logs_file)
-//     .spawn()
-//     .expect("failed to start qdrant")
-// }
+  match getrlimit(Resource::RLIMIT_NOFILE) {
+    Ok((current_soft, current_hard)) => {
+      info!(current_soft, current_hard, "got rlimit/nofile");
+      let new_soft = current_soft.max(current_hard.min(10000));
+      if let Err(err) = setrlimit(Resource::RLIMIT_NOFILE, new_soft, current_hard) {
+        error!(
+          ?err,
+          new_soft, current_soft, current_hard, "failed to set rlimit/nofile"
+        );
+      } else {
+        info!(new_soft, current_hard, "set rlimit/nofile");
+      }
+    }
+    Err(err) => {
+      error!(?err, "failed to get rlimit/nofile");
+    }
+  }
 
-// #[cfg(windows)]
-// fn run_command(command: &Path, qdrant_dir: &Path, stdout: &Path, stderr: &Path) -> Child {
-//   use std::os::windows::process::CommandExt;
+  Command::new(command)
+    .current_dir(qdrant_dir)
+    .stdout(logs_file)
+    .stderr(stderr_logs_file)
+    .spawn()
+    .expect("failed to start qdrant")
+}
 
-//   let qd_logs_dir = qdrant_dir.join("logs");
-//   create_dir_all(&qd_logs_dir).unwrap();
+#[cfg(windows)]
+fn run_command(command: &Path, qdrant_dir: &Path, stdout: &Path, stderr: &Path) -> Child {
+  use std::os::windows::process::CommandExt;
 
-//   let logs_file = File::create(stdout).unwrap();
-//   let stderr_logs_file = File::create(stderr).unwrap();
+  let qd_logs_dir = qdrant_dir.join("logs");
+  create_dir_all(&qd_logs_dir).unwrap();
 
-//   Command::new(command)
-//     .current_dir(qdrant_dir)
-//     // Add a CREATE_NO_WINDOW flag to prevent qdrant console popup
-//     .creation_flags(0x08000000)
-//     .stdout(logs_file)
-//     .stderr(stderr_logs_file)
-//     .spawn()
-//     .expect("failed to start qdrant")
-// }
+  let logs_file = File::create(stdout).unwrap();
+  let stderr_logs_file = File::create(stderr).unwrap();
+
+  Command::new(command)
+    .current_dir(qdrant_dir)
+    // Add a CREATE_NO_WINDOW flag to prevent qdrant console popup
+    .creation_flags(0x08000000)
+    .stdout(logs_file)
+    .stderr(stderr_logs_file)
+    .spawn()
+    .expect("failed to start qdrant")
+}

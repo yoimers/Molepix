@@ -1,10 +1,9 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:3000",
-    "distDir": "../out"
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build",
+    "devPath": "http://localhost:1421",
+    "distDir": "../dist"
   },
   "package": {
     "productName": "pixel-pantry",
@@ -34,6 +33,15 @@
         "message": false,
         "open": true,
         "save": true
+      },
+      "shell": {
+        "sidecar": true,
+        "scope": [
+          {
+            "name": "../../../qdrant/bin/qdrant",
+            "sidecar": true
+          }
+        ]
       }
     },
     "bundle": {
@@ -43,7 +51,9 @@
       "deb": {
         "depends": []
       },
-      "externalBin": [],
+      "externalBin": [
+        "../../../qdrant/bin/qdrant"
+      ],
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
