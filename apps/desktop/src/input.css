@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* width */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  opacity: 0;
+  border-radius: 8px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  width: 20px; /* 幅を変更 */
+  height: 20px; /* 高さを変更 */
+  border-radius: 50%; /* 丸い形状にする */
+}

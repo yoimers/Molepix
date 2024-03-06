@@ -5,10 +5,16 @@ pub mod config;
 pub mod qdrant;
 use std::path::PathBuf;
 
-use tauri::api::dir;
+use tauri::{api::dir, Manager};
+use window_shadows::set_shadow;
 
 fn main() {
   tauri::Builder::default()
+    .setup(|app| {
+      let window = app.get_window("main").unwrap();
+      set_shadow(&window, true).expect("Unsupported platform!");
+      Ok(())
+    })
     .plugin(qdrant::QdrantSupervisor::default())
     .invoke_handler(tauri::generate_handler![greet])
     .run(tauri::generate_context!())
